@@ -20,19 +20,23 @@ io.on('connection', function(socket) {
     var name = "id#" + count++;
     socket.name = name;
     io.to(socket.id).emit('create name', name);
+    io.emit('new_connect', name);
 
     //disconnect
-    socket.on('disconect', function() {
+    socket.on('disconnect', function() {
         console.log('user disconncected: ' + socket.id + ' ' + socket.name);
+        io.emit('new_disconnect', socket.name);
     });
 
     //send message
-    socket.on('send message', function(name, text) {
-        var msg = name + ' : ' + text;
-        socket.name = name;
+    socket.on('send message', function(name, text){ 
+		var msg = name + ' : ' + text;
+		if(name != socket.name) //change name
+		    io.emit('change name', socket.name, name);
+		socket.name = name;
         console.log(msg);
         io.emit('receive message', msg);
-    });
+	});
 });
 
 http.listen(3000, function() {
